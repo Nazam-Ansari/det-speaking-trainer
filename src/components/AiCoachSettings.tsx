@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Bot, ExternalLink, KeyRound } from 'lucide-react';
 import type { AiProvider, Settings } from '../types';
-import { AI_PROVIDERS, geminiModels, groqModels, keyFor, pickGeminiModel } from '../services/ai';
+import { AI_PROVIDERS, geminiModels, groqModels, keyFor, pickGeminiModel, pickGroqModel } from '../services/ai';
 import { Alert, Badge, Button, Card, CardHeader, Segmented, Toggle } from './ui';
 
 /** Settings card for the optional free AI coach (Gemini or Groq, user-supplied key). */
@@ -18,11 +18,13 @@ export function AiCoachSettings({ settings, update }: { settings: Settings; upda
       const list = p === 'gemini' ? await geminiModels(keyFor(settings, p)) : await groqModels(keyFor(settings, p));
       setModels((m) => ({ ...m, [p]: list }));
       // Use the provider's accurate cloud transcription once the key is known to work,
-      // and replace a saved Gemini model that Google no longer offers.
+      // and replace a saved model that the provider no longer offers.
       const patch: Partial<Settings> = { transcriptionEngine: p };
-      if (p === 'gemini' && !list.includes(settings.geminiModel)) patch.geminiModel = pickGeminiModel(list) ?? settings.geminiModel;
+      const field = p === 'gemini' ? 'geminiModel' : 'groqModel';
+      const replacement = list.includes(settings[field]) ? null : (p === 'gemini' ? pickGeminiModel(list) : pickGroqModel(list));
+      if (replacement) patch[field] = replacement;
       update(patch);
-      setResult({ ok: true, text: `Key works. ${list.length} models available${patch.geminiModel && patch.geminiModel !== settings.geminiModel ? `; switched to ${patch.geminiModel}` : ''}. Transcription is now set to ${AI_PROVIDERS[p].label}.` });
+      setResult({ ok: true, text: `Key works. ${list.length} models available${replacement ? `; switched to ${replacement}` : ''}. Transcription is now set to ${AI_PROVIDERS[p].label}.` });
     } catch (e) {
       setResult({ ok: false, text: (e as Error).message });
     } finally {
@@ -93,7 +95,7 @@ export function AiCoachSettings({ settings, update }: { settings: Settings; upda
                 {options.map((m) => <option key={m} value={m}>{m}</option>)}
               </select>
               <span className="mt-1 block text-xs font-normal text-slate-500">
-                {provider === 'gemini' ? 'A "flash" model is recommended (fast, free tier).' : 'llama-3.3-70b-versatile is recommended.'} Press Test key to load the full list.
+                {provider === 'gemini' ? 'A "flash" model is recommended (fast, free tier).' : 'The largest model is usually the best.'} Press Test key to load the full list.
               </span>
             </label>
             <label className="block text-sm font-medium">

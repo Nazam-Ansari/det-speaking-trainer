@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { Settings } from '../types';
 import { DEFAULT_SETTINGS, loadSettings, saveSettings } from '../storage/db';
-import { setGeminiModelListener } from '../services/ai';
+import { setGeminiModelListener, setGroqModelListener } from '../services/ai';
 
 interface Ctx {
   settings: Settings;
@@ -49,10 +49,14 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  // Save the replacement when Google has retired the selected Gemini model.
+  // Save the replacement when a provider has retired the selected model.
   useEffect(() => {
     setGeminiModelListener((geminiModel) => update({ geminiModel }));
-    return () => setGeminiModelListener(null);
+    setGroqModelListener((groqModel) => update({ groqModel }));
+    return () => {
+      setGeminiModelListener(null);
+      setGroqModelListener(null);
+    };
   }, [update]);
 
   return <SettingsContext.Provider value={{ settings, loaded, update }}>{children}</SettingsContext.Provider>;

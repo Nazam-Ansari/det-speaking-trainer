@@ -6,7 +6,7 @@ import { geminiEvaluate } from './gemini';
 import { groqEvaluate } from './groq';
 
 export { geminiModels, geminiTranscribe, pickGeminiModel, setGeminiModelListener } from './gemini';
-export { groqModels, groqTranscribe, GROQ_TRANSCRIBE_MODEL } from './groq';
+export { groqModels, groqTranscribe, pickGroqModel, setGroqModelListener, GROQ_TRANSCRIBE_MODEL } from './groq';
 
 export const AI_PROVIDERS: Record<AiProvider, { label: string; keyUrl: string; keyHint: string }> = {
   gemini: { label: 'Google Gemini', keyUrl: 'https://aistudio.google.com/apikey', keyHint: 'Starts with "AIza…"' },
