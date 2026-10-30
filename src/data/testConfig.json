@@ -1,0 +1,11 @@
+{
+  "name": "Speaking Section Simulation",
+  "description": "Modelled on the publicly described DET speaking task types. Task counts and timers are approximations and can be edited in src/data/testConfig.json.",
+  "sections": [
+    { "type": "read-then-speak", "count": 2, "prepSeconds": 20, "minSeconds": 30, "maxSeconds": 90 },
+    { "type": "photo", "count": 2, "prepSeconds": 20, "minSeconds": 30, "maxSeconds": 90 },
+    { "type": "interactive", "count": 6, "answerSeconds": 35 },
+    { "type": "read-then-speak", "count": 1, "prepSeconds": 20, "minSeconds": 30, "maxSeconds": 90 },
+    { "type": "speaking-sample", "count": 1, "prepSeconds": 30, "minSeconds": 60, "maxSeconds": 180 }
+  ]
+}

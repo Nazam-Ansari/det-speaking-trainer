@@ -1,0 +1,122 @@
+{
+  "type": "interactive",
+  "defaults": { "answerSeconds": 35 },
+  "scenarios": [
+    {
+      "id": "int-course", "title": "Choosing a course", "topic": "education", "difficulty": "intermediate", "length": 8, "start": "a1",
+      "intro": "You are talking to a student advisor at a local college about taking a new course.",
+      "nodes": [
+        { "id": "a1", "text": "Hi! I hear you're thinking about taking a course. What subject are you interested in, and why?", "next": "a2", "keywords": ["subject", "course", "interested", "because", "study"] },
+        { "id": "a2", "text": "Have you studied this subject before, or would you be a complete beginner?", "branches": [{ "ifAny": ["no", "never", "beginner", "new", "haven't", "not"], "next": "a3b" }], "next": "a3a", "keywords": ["studied", "before", "beginner", "experience"] },
+        { "id": "a3a", "text": "What did you find most challenging when you studied it before?", "next": "a4", "keywords": ["challenging", "difficult", "hard", "problem"] },
+        { "id": "a3b", "text": "Starting something completely new can be difficult. What makes you feel confident that you can learn it?", "next": "a4", "keywords": ["confident", "learn", "new", "practice", "motivated"] },
+        { "id": "a4", "text": "Would you prefer to take the course online or in person? Why?", "branches": [{ "ifAny": ["online", "internet", "home", "remote", "computer"], "next": "a5a" }], "next": "a5b", "keywords": ["online", "in person", "prefer", "classroom"] },
+        { "id": "a5a", "text": "Many people find it hard to stay motivated when they study online. How would you keep yourself on track?", "next": "a6", "keywords": ["motivated", "schedule", "plan", "discipline", "goal"] },
+        { "id": "a5b", "text": "Attending classes in person takes time. How would you fit the course into your weekly schedule?", "next": "a6", "keywords": ["schedule", "time", "week", "evening", "weekend"] },
+        { "id": "a6", "text": "How do you think this course could help your career or your personal life?", "next": "a7", "keywords": ["career", "job", "help", "future", "skills"] },
+        { "id": "a7", "text": "If a friend asked whether they should join the course with you, what would you tell them?", "next": "a8", "keywords": ["friend", "recommend", "join", "together", "advice"] },
+        { "id": "a8", "text": "Finally, what is one specific goal you would like to reach by the end of the course?", "keywords": ["goal", "achieve", "end", "able to", "certificate"] }
+      ]
+    },
+    {
+      "id": "int-job", "title": "A part-time job", "topic": "work", "difficulty": "intermediate", "length": 8, "start": "b1",
+      "intro": "You are speaking with a manager at a bookshop about a part-time job.",
+      "nodes": [
+        { "id": "b1", "text": "Thanks for coming in. Could you tell me a little about yourself and why you applied for this job?", "next": "b2", "keywords": ["applied", "job", "myself", "because", "interested"] },
+        { "id": "b2", "text": "Do you have any previous work experience?", "branches": [{ "ifAny": ["no", "never", "haven't", "first job", "not yet"], "next": "b3b" }], "next": "b3a", "keywords": ["experience", "worked", "job", "previous"] },
+        { "id": "b3a", "text": "What was the most useful thing you learned in that job?", "next": "b4", "keywords": ["learned", "useful", "skill", "customers", "team"] },
+        { "id": "b3b", "text": "That's fine. What experiences from school or daily life have prepared you for working with customers?", "next": "b4", "keywords": ["school", "prepared", "customers", "volunteer", "people"] },
+        { "id": "b4", "text": "Imagine a customer is angry because a book they ordered hasn't arrived. What would you say to them?", "next": "b5", "keywords": ["sorry", "apologise", "apologize", "customer", "order", "check", "help"] },
+        { "id": "b5", "text": "Which hours would you be available to work, and could you work at weekends?", "branches": [{ "ifAny": ["no", "can't", "cannot", "not available", "busy"], "next": "b6b" }], "next": "b6a", "keywords": ["hours", "available", "weekend", "morning", "evening"] },
+        { "id": "b6a", "text": "Great. Weekends can be very busy here. How do you usually handle pressure?", "next": "b7", "keywords": ["pressure", "stress", "calm", "busy", "organised", "organized"] },
+        { "id": "b6b", "text": "I understand. How would you balance this job with your other responsibilities?", "next": "b7", "keywords": ["balance", "responsibilities", "study", "time", "schedule"] },
+        { "id": "b7", "text": "What kinds of books do you enjoy, and how would you recommend one to a customer?", "next": "b8", "keywords": ["books", "read", "recommend", "novel", "story", "genre"] },
+        { "id": "b8", "text": "Before we finish, is there anything you would like to ask me about the job?", "keywords": ["ask", "question", "training", "team", "start", "salary"] }
+      ]
+    },
+    {
+      "id": "int-trip", "title": "Planning a trip", "topic": "travel", "difficulty": "beginner", "length": 7, "start": "c1",
+      "intro": "A friend wants to plan a short holiday with you.",
+      "nodes": [
+        { "id": "c1", "text": "I really need a holiday! If we could go anywhere for a week, where would you choose?", "next": "c2", "keywords": ["go", "visit", "country", "city", "choose", "because"] },
+        { "id": "c2", "text": "Would you rather relax on a beach or explore a busy city? Why?", "branches": [{ "ifAny": ["beach", "relax", "sea", "quiet", "nature"], "next": "c3a" }], "next": "c3b", "keywords": ["beach", "city", "relax", "explore", "prefer"] },
+        { "id": "c3a", "text": "Sounds peaceful. What would a perfect day at the beach look like for you?", "next": "c4", "keywords": ["morning", "swim", "sun", "read", "eat", "day"] },
+        { "id": "c3b", "text": "Cities are exciting. What kind of places would you want to visit there, such as museums or markets?", "next": "c4", "keywords": ["museum", "market", "restaurant", "visit", "places", "shops"] },
+        { "id": "c4", "text": "How should we travel there, and why do you think that's the best option?", "next": "c5", "keywords": ["plane", "train", "bus", "car", "fly", "cheaper", "faster"] },
+        { "id": "c5", "text": "What kind of accommodation would you prefer, a hotel, a hostel, or an apartment?", "next": "c6", "keywords": ["hotel", "hostel", "apartment", "stay", "prefer", "comfortable"] },
+        { "id": "c6", "text": "What's one thing that could go wrong on the trip, and how could we prepare for it?", "next": "c7", "keywords": ["wrong", "prepare", "lose", "weather", "delay", "plan"] },
+        { "id": "c7", "text": "Great plan. Which local food would you most like to try there?", "keywords": ["food", "try", "eat", "dish", "taste", "local"] }
+      ]
+    },
+    {
+      "id": "int-move", "title": "Moving to a new city", "topic": "daily-life", "difficulty": "intermediate", "length": 7, "start": "d1",
+      "intro": "A new neighbour is asking about your experience of living in different places.",
+      "nodes": [
+        { "id": "d1", "text": "Hello! I've just moved here. How long have you lived in this area?", "next": "d2", "keywords": ["lived", "years", "months", "since", "area", "moved"] },
+        { "id": "d2", "text": "Do you like living here, or would you prefer to live somewhere else?", "branches": [{ "ifAny": ["prefer", "somewhere else", "don't like", "not really", "move"], "next": "d3b" }], "next": "d3a", "keywords": ["like", "prefer", "live", "because"] },
+        { "id": "d3a", "text": "What do you like most about this neighbourhood?", "next": "d4", "keywords": ["like", "neighbourhood", "neighborhood", "park", "shops", "quiet", "people"] },
+        { "id": "d3b", "text": "Interesting. Where would you rather live, and what would be better there?", "next": "d4", "keywords": ["rather", "live", "better", "city", "countryside"] },
+        { "id": "d4", "text": "What's the best way to get around here — by bus, bike, or car?", "next": "d5", "keywords": ["bus", "bike", "car", "walk", "train", "traffic"] },
+        { "id": "d5", "text": "I'm trying to meet new people. What would you suggest I do?", "next": "d6", "keywords": ["join", "club", "suggest", "meet", "volunteer", "gym", "class"] },
+        { "id": "d6", "text": "When you moved to a new place before, what was the hardest thing to get used to?", "next": "d7", "keywords": ["hardest", "used to", "difficult", "miss", "new"] },
+        { "id": "d7", "text": "Thank you! Is there a local restaurant or café you'd recommend?", "keywords": ["restaurant", "cafe", "café", "recommend", "food", "coffee"] }
+      ]
+    },
+    {
+      "id": "int-health", "title": "Healthy habits survey", "topic": "health", "difficulty": "intermediate", "length": 7, "start": "e1",
+      "intro": "A researcher is interviewing you about your lifestyle for a health study.",
+      "nodes": [
+        { "id": "e1", "text": "Thank you for taking part. How would you describe your lifestyle at the moment?", "next": "e2", "keywords": ["lifestyle", "healthy", "busy", "active", "usually"] },
+        { "id": "e2", "text": "Do you do any regular exercise?", "branches": [{ "ifAny": ["no", "not", "don't", "never", "rarely"], "next": "e3b" }], "next": "e3a", "keywords": ["exercise", "sport", "gym", "run", "walk", "week"] },
+        { "id": "e3a", "text": "What motivates you to keep exercising, even when you are busy?", "next": "e4", "keywords": ["motivate", "feel", "energy", "goal", "busy"] },
+        { "id": "e3b", "text": "What stops you from exercising more often?", "next": "e4", "keywords": ["time", "tired", "busy", "stop", "lazy", "work"] },
+        { "id": "e4", "text": "How would you describe your diet? Do you cook at home or eat out more often?", "next": "e5", "keywords": ["diet", "cook", "home", "eat out", "food", "vegetables"] },
+        { "id": "e5", "text": "How many hours do you usually sleep, and do you think it's enough?", "next": "e6", "keywords": ["sleep", "hours", "enough", "tired", "night"] },
+        { "id": "e6", "text": "How do you usually deal with stress?", "next": "e7", "keywords": ["stress", "relax", "music", "talk", "walk", "deal"] },
+        { "id": "e7", "text": "Last question: if you could change one habit tomorrow, what would it be?", "keywords": ["change", "habit", "tomorrow", "would", "start", "stop"] }
+      ]
+    },
+    {
+      "id": "int-green", "title": "A school green project", "topic": "environment", "difficulty": "advanced", "length": 8, "start": "f1",
+      "intro": "A classmate wants your help to organise an environmental project at your school or workplace.",
+      "nodes": [
+        { "id": "f1", "text": "I want to start an environmental project here. What do you think is the biggest environmental problem in our area?", "next": "f2", "keywords": ["problem", "pollution", "waste", "plastic", "traffic", "environment"] },
+        { "id": "f2", "text": "Why do you think people don't take that problem more seriously?", "next": "f3", "keywords": ["people", "seriously", "aware", "convenient", "cost", "because"] },
+        { "id": "f3", "text": "Should our project focus on recycling or on reducing energy use?", "branches": [{ "ifAny": ["energy", "electricity", "power", "lights", "heating"], "next": "f4b" }], "next": "f4a", "keywords": ["recycling", "energy", "focus", "better"] },
+        { "id": "f4a", "text": "How could we encourage people to recycle correctly instead of putting everything in one bin?", "next": "f5", "keywords": ["encourage", "recycle", "bins", "signs", "information", "reward"] },
+        { "id": "f4b", "text": "What practical changes could people make to use less energy every day?", "next": "f5", "keywords": ["lights", "switch off", "heating", "computers", "energy", "change"] },
+        { "id": "f5", "text": "How should we measure whether the project is actually working?", "next": "f6", "keywords": ["measure", "data", "results", "compare", "survey", "track"] },
+        { "id": "f6", "text": "Some people might say this project is a waste of time. How would you respond?", "next": "f7", "keywords": ["respond", "important", "benefit", "small", "difference", "future"] },
+        { "id": "f7", "text": "Who else should we ask to get involved, and why?", "next": "f8", "keywords": ["involve", "teachers", "students", "managers", "local", "community"] },
+        { "id": "f8", "text": "Imagine the project is a success. What would you like to see change in a year's time?", "keywords": ["success", "year", "change", "less", "more", "hope"] }
+      ]
+    },
+    {
+      "id": "int-celebration", "title": "Planning a celebration", "topic": "family", "difficulty": "beginner", "length": 6, "start": "g1",
+      "intro": "Your cousin is helping you plan a celebration for a family member.",
+      "nodes": [
+        { "id": "g1", "text": "We need to plan the party for grandma's birthday. Where do you think we should have it?", "next": "g2", "keywords": ["home", "restaurant", "garden", "house", "party", "because"] },
+        { "id": "g2", "text": "Should it be a small family dinner or a big party with lots of guests?", "branches": [{ "ifAny": ["small", "dinner", "quiet", "family only", "few"], "next": "g3a" }], "next": "g3b", "keywords": ["small", "big", "guests", "dinner", "party"] },
+        { "id": "g3a", "text": "Good idea. What food should we cook for the dinner?", "next": "g4", "keywords": ["food", "cook", "dish", "cake", "favourite", "favorite"] },
+        { "id": "g3b", "text": "A big party needs a lot of organising. What tasks should we share between family members?", "next": "g4", "keywords": ["tasks", "share", "organise", "organize", "decorations", "invitations"] },
+        { "id": "g4", "text": "What present do you think she would like most?", "next": "g5", "keywords": ["present", "gift", "like", "photo", "flowers", "because"] },
+        { "id": "g5", "text": "Can you tell me about a family celebration you remember well?", "next": "g6", "keywords": ["remember", "celebration", "family", "when", "was"] },
+        { "id": "g6", "text": "Finally, how can we make sure grandma feels really special on the day?", "keywords": ["special", "speech", "surprise", "photos", "together", "feel"] }
+      ]
+    },
+    {
+      "id": "int-tech", "title": "Buying a new laptop", "topic": "technology", "difficulty": "advanced", "length": 7, "start": "h1",
+      "intro": "A shop assistant is helping you choose a new laptop.",
+      "nodes": [
+        { "id": "h1", "text": "Good afternoon! What will you mainly use your new laptop for?", "next": "h2", "keywords": ["use", "work", "study", "games", "video", "programming"] },
+        { "id": "h2", "text": "What problems did you have with your previous computer, if any?", "next": "h3", "keywords": ["slow", "battery", "broke", "problem", "old", "screen"] },
+        { "id": "h3", "text": "Is price your most important factor, or are you willing to pay more for quality?", "branches": [{ "ifAny": ["price", "cheap", "budget", "afford", "expensive"], "next": "h4a" }], "next": "h4b", "keywords": ["price", "quality", "pay", "important", "budget"] },
+        { "id": "h4a", "text": "Understood. Which features would you be willing to give up to keep the price low?", "next": "h5", "keywords": ["features", "give up", "screen", "storage", "camera", "weight"] },
+        { "id": "h4b", "text": "Great. Which premium features matter most to you, and why?", "next": "h5", "keywords": ["features", "screen", "battery", "fast", "light", "design"] },
+        { "id": "h5", "text": "Do you think people replace their devices too often these days? Why or why not?", "next": "h6", "keywords": ["replace", "often", "waste", "new", "marketing", "environment"] },
+        { "id": "h6", "text": "Would you consider buying a second-hand or refurbished laptop instead?", "next": "h7", "keywords": ["second-hand", "refurbished", "used", "cheaper", "risk", "warranty"] },
+        { "id": "h7", "text": "Before you decide, what questions would you like to ask me about the warranty or support?", "keywords": ["warranty", "repair", "support", "return", "how long", "cover"] }
+      ]
+    }
+  ]
+}
