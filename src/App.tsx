@@ -14,7 +14,7 @@ import { AboutPage } from './pages/AboutPage';
 export function App() {
   return (
     <SettingsProvider>
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
           <Route element={<AppLayout />}>
             <Route index element={<DashboardPage />} />

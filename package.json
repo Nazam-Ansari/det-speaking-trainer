@@ -10,7 +10,8 @@
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "deploy": "node scripts/deploy-pages.mjs"
   },
   "dependencies": {
     "@huggingface/transformers": "^3.8.1",

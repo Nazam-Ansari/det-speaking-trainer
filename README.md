@@ -88,3 +88,7 @@ Settings → **AI Coach (free)** connects a free-tier AI using your own API key:
 - **Google Gemini** (https://aistudio.google.com/apikey): transcription and feedback, and it can listen to your audio for pronunciation comments (an AI opinion, not a measured score).
 
 The key is stored only in this browser's IndexedDB and is sent only to the chosen provider. Free tiers have rate limits, and providers may use free-tier data. If a call fails, the app falls back to the offline rule engine and shows a warning. AI scores are still unofficial estimates.
+
+## Deploy online (GitHub Pages)
+
+`npm run deploy` builds the app for `https://<user>.github.io/<repo>/` and pushes it to the `gh-pages` branch. In the repo's Settings → Pages, the source is the `gh-pages` branch. Run it again after each change.
