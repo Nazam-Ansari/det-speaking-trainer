@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, CircleCheck, Dumbbell, Lightbulb, ListChecks, RotateCcw, Target, TrendingDown, TrendingUp } from 'lucide-react';
+import { ArrowRight, Circle, CircleCheck, Dumbbell, Lightbulb, ListChecks, ListTodo, RotateCcw, Target, TrendingDown, TrendingUp } from 'lucide-react';
 import { useAttempts } from '../hooks/useData';
 import { useSettings } from '../hooks/useSettings';
 import { average, CRITERIA, CRITERION_LABELS, toDetScore } from '../engines/scoring';
@@ -37,20 +37,119 @@ const reasonKey = (r: string) => r.replace(/\s*\(".*$/, '').trim();
 
 const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9' ]+/g, ' ').replace(/\s+/g, ' ').trim();
 
-function loadMastered(): Set<string> {
+/** Fixed drill sentences → when they were fixed. */
+type Mastered = Record<string, number>;
+
+function loadMastered(): Mastered {
   try {
-    return new Set(JSON.parse(localStorage.getItem(MASTERED_KEY) ?? '[]') as string[]);
+    const raw: unknown = JSON.parse(localStorage.getItem(MASTERED_KEY) ?? '{}');
+    // Older versions stored a plain list of sentences.
+    return Array.isArray(raw) ? Object.fromEntries(raw.map((s: string) => [s, 0])) : (raw as Mastered);
   } catch {
-    return new Set();
+    return {};
   }
 }
 
-function saveMastered(s: Set<string>) {
+function saveMastered(m: Mastered) {
   try {
-    localStorage.setItem(MASTERED_KEY, JSON.stringify([...s]));
+    localStorage.setItem(MASTERED_KEY, JSON.stringify(m));
   } catch {
     // Storage unavailable: progress just isn't remembered.
   }
+}
+
+// ---------- Daily tasks ----------
+
+interface DailyTask { id: string; title: string; why: string; goal: number; done: number; type?: QuestionType; drill?: boolean }
+
+const LINKERS = ['although', 'even though', 'while', 'whereas', 'which', 'unless', 'however', 'moreover', 'on the other hand', 'as a result', 'therefore', 'in addition'];
+const REASONS = ['because', 'since', 'the reason', "that's why", 'that is why', 'so that'];
+const EXAMPLES = ['for example', 'for instance', 'such as'];
+
+const textOf = (a: Attempt) => ` ${(a.editedTranscript ?? a.originalTranscript).toLowerCase().replace(/[^a-z' ]+/g, ' ')} `;
+const countPhrases = (text: string, list: string[]) => list.filter((p) => text.includes(` ${p} `)).length;
+const dimOf = (a: Attempt, key: EvaluationCriterion) => a.evaluation.dimensions.find((d) => d.key === key)?.score;
+const startOfToday = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); };
+
+/**
+ * Builds today's tasks from your weak points. Weak points come from answers given before
+ * today, so the list stays the same all day; progress is counted from today's answers.
+ */
+function buildDailyTasks(attempts: Attempt[], deckSize: number, mastered: Mastered): DailyTask[] {
+  const today0 = startOfToday();
+  const today = attempts.filter((a) => a.createdAt >= today0);
+  const before = attempts.filter((a) => a.createdAt < today0).slice(0, RECENT);
+  const basis = before.length ? before : attempts.slice(0, RECENT);
+  if (!basis.length) return [];
+  const doneIf = (goal: number, ok: (a: Attempt) => boolean) => Math.min(goal, today.filter(ok).length);
+
+  const ruleCounts = new Map<string, number>();
+  for (const a of basis) for (const c of a.evaluation.corrections) for (const r of c.reasons) ruleCounts.set(reasonKey(r), (ruleCounts.get(reasonKey(r)) ?? 0) + 1);
+  const topRule = [...ruleCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+
+  const byDim: Record<EvaluationCriterion, DailyTask> = {
+    grammar: topRule
+      ? { id: 'grammar', title: `Give 2 answers (30+ words) without this mistake: “${topRule}”`, why: 'This is the grammar mistake you make most often.', goal: 2, done: doneIf(2, (a) => a.evaluation.fluency.wordCount >= 30 && !a.evaluation.corrections.some((c) => c.reasons.some((r) => reasonKey(r) === topRule))) }
+      : { id: 'grammar', title: 'Give 2 answers with a Grammar score of 75+', why: 'Grammar is one of your weakest skills.', goal: 2, done: doneIf(2, (a) => (dimOf(a, 'grammar') ?? 0) >= 75) },
+    vocabulary: { id: 'vocabulary', title: 'Give 2 answers with a Vocabulary score of 70+', why: 'Use precise words instead of "good", "nice", "very big".', goal: 2, done: doneIf(2, (a) => (dimOf(a, 'vocabulary') ?? 0) >= 70), type: 'speaking-sample' },
+    fluency: { id: 'fluency', title: 'Give 2 answers of 60+ words with at most 2 filler words (um, uh, like…)', why: 'Fillers and stops lower your fluency score.', goal: 2, done: doneIf(2, (a) => a.evaluation.fluency.wordCount >= 60 && a.evaluation.fluency.fillerCount <= 2), type: 'speaking-sample' },
+    relevance: { id: 'relevance', title: 'Do 2 Read, Then Speak answers with a Relevance score of 70+', why: 'Answer exactly what the question asks.', goal: 2, done: doneIf(2, (a) => a.question.type === 'read-then-speak' && (dimOf(a, 'relevance') ?? 0) >= 70), type: 'read-then-speak' },
+    development: { id: 'development', title: 'Give 2 answers that use a reason (“because…”) and an example (“for example…”)', why: 'Developed answers with reasons and examples score higher.', goal: 2, done: doneIf(2, (a) => countPhrases(textOf(a), REASONS) > 0 && countPhrases(textOf(a), EXAMPLES) > 0), type: 'speaking-sample' },
+    structure: { id: 'structure', title: 'Give 2 answers with at least 2 linking words (although, however, which, while…)', why: 'Linked, longer sentences show grammar range.', goal: 2, done: doneIf(2, (a) => countPhrases(textOf(a), LINKERS) >= 2), type: 'read-then-speak' },
+  };
+
+  const tasks: DailyTask[] = [];
+  const shortShare = basis.filter((a) => a.evaluation.issues.some((i) => i.category === 'length')).length / basis.length;
+  if (shortShare >= 0.3) {
+    tasks.push({ id: 'length', title: 'Give 3 answers that use at least 80% of the speaking time', why: `${Math.round(shortShare * 100)}% of your answers were too short, which caps the score.`, goal: 3, done: doneIf(3, (a) => a.evaluation.fluency.usedTimeRatio >= 0.8), type: 'speaking-sample' });
+  }
+  if (deckSize > 0) {
+    const goal = Math.min(5, deckSize);
+    const fixedToday = Object.values(mastered).filter((t) => t >= today0).length;
+    tasks.push({ id: 'drill', title: `Fix ${goal} of your own sentences in “Fix it yourself”`, why: 'Correcting your own mistakes is the fastest way to stop making them.', goal, done: Math.min(goal, fixedToday), drill: true });
+  }
+  const weakest = CRITERIA.map((k) => [k, dimAvg(basis, k)] as const).filter(([, v]) => v != null).sort((a, b) => a[1]! - b[1]!);
+  for (const [k] of weakest) {
+    if (tasks.length >= 4) break;
+    tasks.push(byDim[k]);
+  }
+  return tasks;
+}
+
+function DailyTasks({ tasks }: { tasks: DailyTask[] }) {
+  const finished = tasks.filter((t) => t.done >= t.goal).length;
+  const all = finished === tasks.length;
+  return (
+    <Card className={cn(all && 'border-brand-300 dark:border-brand-800')}>
+      <CardHeader
+        icon={<ListTodo className="h-4 w-4" />}
+        title="Today's tasks"
+        subtitle={all ? 'All done for today — great work! New tasks tomorrow.' : 'Picked from your weak points. They tick off automatically as you practise.'}
+        action={<Badge tone={all ? 'brand' : 'neutral'}>{finished}/{tasks.length} done</Badge>}
+      />
+      <ul className="space-y-3">
+        {tasks.map((t) => {
+          const done = t.done >= t.goal;
+          return (
+            <li key={t.id} className={cn('flex gap-3 rounded-xl border p-3', done ? 'border-brand-200 bg-brand-50/60 dark:border-brand-900 dark:bg-brand-950/30' : 'border-slate-200 dark:border-slate-800')}>
+              {done ? <CircleCheck className="mt-0.5 h-5 w-5 shrink-0 text-brand-600" /> : <Circle className="mt-0.5 h-5 w-5 shrink-0 text-slate-300 dark:text-slate-600" />}
+              <div className="min-w-0 flex-1">
+                <p className={cn('font-medium', done && 'text-slate-500 line-through decoration-brand-400')}>{t.title}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{t.why}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-3">
+                  <span className="text-xs tabular-nums text-slate-500">{t.done}/{t.goal}</span>
+                  <div className="w-24"><ProgressBar value={(t.done / t.goal) * 100} colorByScore={false} /></div>
+                  {!done && (t.drill
+                    ? <a href="#fix-it" className="inline-flex items-center gap-1 text-sm font-medium text-brand-600 hover:underline">Go to drill <ArrowRight className="h-3.5 w-3.5" /></a>
+                    : <Link to={`/practice/${t.type ?? 'random'}`} className="inline-flex items-center gap-1 text-sm font-medium text-brand-600 hover:underline">Start <ArrowRight className="h-3.5 w-3.5" /></Link>)}
+                </div>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </Card>
+  );
 }
 
 export function ImprovePage() {
@@ -109,6 +208,10 @@ export function ImprovePage() {
     return { recent, current, need, dims, shortShare, mistakes, deck, errorsPer100: words ? Math.round((grammarIssues / words) * 1000) / 10 : 0, usesAi: recent.some((a) => a.evaluation.ai) };
   }, [attempts, target]);
 
+  const [mastered, setMastered] = useState(loadMastered);
+  const updateMastered = (m: Mastered) => { setMastered(m); saveMastered(m); };
+  const tasks = useMemo(() => buildDailyTasks(attempts, s.deck.length, mastered), [attempts, s.deck.length, mastered]);
+
   if (loading) return <Spinner label="Loading your mistakes…" />;
   if (!attempts.length) {
     return (
@@ -130,6 +233,8 @@ export function ImprovePage() {
   return (
     <div className="space-y-6">
       <PageHeader title="Improve" subtitle={`Your repeated mistakes and a plan to reach ${target}, based on your last ${s.recent.length} answers.`} />
+
+      {tasks.length > 0 && <DailyTasks tasks={tasks} />}
 
       {/* Score gap */}
       <Card>
@@ -212,37 +317,39 @@ export function ImprovePage() {
         ) : <p className="text-sm text-slate-500">No grammar mistakes found in your recent answers. 🎉</p>}
       </Card>
 
-      <FixItDrill deck={s.deck} />
+      <div id="fix-it" className="scroll-mt-20"><FixItDrill deck={s.deck} mastered={mastered} onMasteredChange={updateMastered} /></div>
     </div>
   );
 }
 
 /** Shows one of your own wrong sentences; you type the fix and check it. */
-function FixItDrill({ deck }: { deck: Correction[] }) {
-  const [mastered, setMastered] = useState(loadMastered);
+function FixItDrill({ deck, mastered, onMasteredChange }: { deck: Correction[]; mastered: Mastered; onMasteredChange: (m: Mastered) => void }) {
   const [index, setIndex] = useState(0);
   const [input, setInput] = useState('');
   const [result, setResult] = useState<'right' | 'wrong' | null>(null);
+  // Keeps a just-fixed sentence on screen (it has already left the to-do list) until "Next".
+  const [pinned, setPinned] = useState<Correction | null>(null);
 
-  const todo = deck.filter((c) => !mastered.has(c.original));
-  const card = todo.length ? todo[index % todo.length] : null;
+  const todo = deck.filter((c) => !(c.original in mastered));
+  const card = pinned ?? (todo.length ? todo[index % todo.length] : null);
 
   const next = () => {
-    if (card && result === 'right') {
-      // The fixed sentence leaves the list, so the same index now points at the next one.
-      const m = new Set(mastered).add(card.original);
-      setMastered(m);
-      saveMastered(m);
-    } else {
-      setIndex((i) => i + 1);
-    }
+    // A fixed sentence left the list, so the same index already points at the next one.
+    if (pinned) setPinned(null);
+    else setIndex((i) => i + 1);
     setInput('');
     setResult(null);
   };
   const check = () => {
-    if (card) setResult(normalize(input) === normalize(card.corrected) ? 'right' : 'wrong');
+    if (!card) return;
+    const ok = normalize(input) === normalize(card.corrected);
+    setResult(ok ? 'right' : 'wrong');
+    if (ok) {
+      setPinned(card);
+      onMasteredChange({ ...mastered, [card.original]: Date.now() });
+    }
   };
-  const reset = () => { const m = new Set<string>(); setMastered(m); saveMastered(m); setIndex(0); setInput(''); setResult(null); };
+  const reset = () => { onMasteredChange({}); setPinned(null); setIndex(0); setInput(''); setResult(null); };
 
   const done = deck.length - todo.length;
 
@@ -276,7 +383,7 @@ function FixItDrill({ deck }: { deck: Correction[] }) {
             placeholder="Type the corrected sentence…"
             className="w-full rounded-xl border border-slate-300 bg-white p-3 text-[15px] focus:border-brand-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900"
           />
-          {result === 'right' && <Alert tone="success" title="Correct!">Press "Next sentence" to continue.</Alert>}
+          {result === 'right' && <Alert tone="success" title="Correct!">This counts towards today's tasks.</Alert>}
           {result === 'wrong' && (
             <div className={cn('space-y-2 rounded-xl border border-amber-200 p-3 text-sm dark:border-amber-900')}>
               <p className="font-medium text-amber-700 dark:text-amber-300">Not quite. The correct sentence:</p>
