@@ -1,13 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { applyGrammarRules } from '../engines/evaluation';
 import { GRAMMAR_DRILLS } from './grammarDrills';
-import { frameworkFor } from './speakingFrameworks';
+import { FRAMEWORKS, frameworkFor } from './speakingFrameworks';
 
 describe('grammar drills', () => {
   it.each(GRAMMAR_DRILLS.map((d) => [d.id, d] as const))('%s: the checker fixes the example mistake', (_id, d) => {
     const { corrected, hits } = applyGrammarRules(d.example.wrong);
     expect(corrected).toBe(d.example.right);
     expect(hits.every((h) => d.ruleIds.includes(h.rule.id))).toBe(true);
+  });
+
+  it.each(GRAMMAR_DRILLS.flatMap((d) => d.questions.map((q) => [q.q, q.sample] as const)))('sample answer for "%s" has no detected mistakes', (_q, sample) => {
+    expect(applyGrammarRules(sample).hits.map((h) => h.excerpt)).toEqual([]);
   });
 });
 
@@ -25,5 +29,12 @@ describe('frameworkFor', () => {
     ['Describe a goal you want to achieve in the next five years and explain your plan for reaching it.', 'describe'],
   ])('%s → %s', (q, id) => {
     expect(frameworkFor(q).id).toBe(id);
+  });
+});
+
+describe('framework sample answers', () => {
+  it.each(FRAMEWORKS.map((f) => [f.id, f] as const))('%s: one paragraph per part, no detected mistakes', (_id, f) => {
+    expect(f.example.sample).toHaveLength(f.parts.length);
+    expect(f.example.sample.flatMap((p) => applyGrammarRules(p).hits.map((h) => h.excerpt))).toEqual([]);
   });
 });

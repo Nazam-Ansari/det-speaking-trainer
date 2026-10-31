@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Compass } from 'lucide-react';
+import { ChevronDown, Compass, Lightbulb } from 'lucide-react';
+import { ListenButton } from './QuestionPrompt';
 import { FULL_SECONDS, frameworkFor, type SpeakingFramework } from '../data/speakingFrameworks';
 import { cn, formatSeconds } from '../utils/format';
 import { Segmented } from './ui';
@@ -35,9 +36,11 @@ export function FrameworkTimeline({ framework, total = FULL_SECONDS, elapsed, cl
 }
 
 /** Practice-mode helper for Speaking Sample: the plan during prep, the current part while speaking. */
-export function SpeakingGuide({ question, total, elapsed }: { question: string; total: number; elapsed: number | null }) {
+export function SpeakingGuide({ question, sampleAnswer, total, elapsed }: { question: string; sampleAnswer?: string; total: number; elapsed: number | null }) {
   const framework = frameworkFor(question);
   const [lang, setLang] = useState<GuideLang>('english');
+  const [showSample, setShowSample] = useState(false);
+  const sample = sampleAnswer ?? framework.example.sample.join(' ');
   const k = total / FULL_SECONDS;
   const current = elapsed == null ? -1 : framework.parts.findIndex((p) => elapsed >= p.from * k && elapsed < p.to * k);
 
@@ -58,6 +61,23 @@ export function SpeakingGuide({ question, total, elapsed }: { question: string; 
           </li>
         ))}
       </ol>
+      {/* Hidden while recording, so the sample is not picked up by the microphone. */}
+      {elapsed == null && <div className="rounded-xl border border-dashed border-slate-300 p-3 dark:border-slate-700">
+        <button onClick={() => setShowSample((v) => !v)} className="flex w-full items-center justify-between gap-2 text-left text-sm font-medium text-brand-700 dark:text-brand-300">
+          <span className="flex items-center gap-2"><Lightbulb className="h-4 w-4" /> Stuck? {sampleAnswer ? 'Hear a sample answer to this question' : 'Hear a sample answer to a similar question'}</span>
+          <ChevronDown className={cn('h-4 w-4 transition-transform', showSample && 'rotate-180')} />
+        </button>
+        {showSample && (
+          <div className="mt-3 space-y-2 animate-fade-in">
+            {!sampleAnswer && <p className="text-xs font-medium text-slate-500">{framework.example.question}</p>}
+            <p className="text-sm leading-relaxed">{sample}</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <ListenButton text={sample} />
+              <span className="text-xs text-slate-500">Use the ideas and structure, but say it in your own words.</span>
+            </div>
+          </div>
+        )}
+      </div>}
       <Link to="/learn" className="text-xs font-medium text-brand-600 hover:underline">How to speak for 3 minutes →</Link>
     </div>
   );

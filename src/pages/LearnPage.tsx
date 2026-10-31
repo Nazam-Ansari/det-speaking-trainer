@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Clock, Lightbulb, ListOrdered, NotebookPen } from 'lucide-react';
+import { ArrowRight, Clock, Headphones, Lightbulb, ListOrdered, NotebookPen } from 'lucide-react';
 import { FRAMEWORKS, FULL_SECONDS } from '../data/speakingFrameworks';
 import { FrameworkTimeline, type GuideLang } from '../components/SpeakingGuide';
+import { ListenButton } from '../components/QuestionPrompt';
+import { words as wordList } from '../engines/evaluation/text';
 import { Button, Card, CardHeader, PageHeader, Segmented } from '../components/ui';
 import { cn, formatSeconds } from '../utils/format';
 
@@ -82,6 +84,26 @@ export function LearnPage() {
         <ol className="space-y-1.5 text-sm">
           {fw.example.plan.map((line, i) => (
             <li key={line} className="flex gap-2"><span className="w-12 shrink-0 tabular-nums text-xs text-slate-400">{formatSeconds(fw.parts[i].from)}</span>{line}</li>
+          ))}
+        </ol>
+      </Card>
+
+      <Card>
+        <CardHeader
+          icon={<Headphones className="h-4 w-4" />}
+          title="Full sample answer"
+          subtitle={`The same plan spoken in full — about ${wordList(fw.example.sample.join(' ')).length} words, roughly 2 minutes at a calm pace.`}
+          action={<ListenButton text={fw.example.sample.join(' ')} label="Listen to all" />}
+        />
+        <ol className="space-y-3">
+          {fw.example.sample.map((para, i) => (
+            <li key={para} className="rounded-xl border border-slate-200 p-3 dark:border-slate-800">
+              <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm font-semibold text-brand-700 dark:text-brand-300">{i + 1}. {fw.parts[i].name}</p>
+                <ListenButton text={para} label="Listen" />
+              </div>
+              <p className="text-[15px] leading-relaxed">{para}</p>
+            </li>
           ))}
         </ol>
       </Card>

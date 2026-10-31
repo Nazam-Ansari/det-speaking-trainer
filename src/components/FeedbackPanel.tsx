@@ -5,6 +5,7 @@ import { Alert, Badge, Button, Card, CardHeader, KindBadge, ProgressBar, ScoreRi
 import { diffWords } from '../utils/diff';
 import { cn } from '../utils/format';
 import { scoreColor } from '../engines/scoring';
+import { ListenButton } from './QuestionPrompt';
 
 const ISSUE_LABELS: Record<Issue['category'], string> = {
   grammar: 'Grammar', 'verb-tense': 'Verb tense', article: 'Article', agreement: 'Agreement', 'word-choice': 'Word choice',
@@ -92,6 +93,7 @@ export function FeedbackPanel({ evaluation: e, originalTranscript, editedTranscr
           <Badge tone={e.modelAnswerKind === 'framework' ? 'neutral' : 'brand'}>{e.modelAnswerKind === 'framework' ? 'Structure guide' : e.modelAnswerKind === 'ai' ? 'Written by AI from your ideas' : 'Written sample'}</Badge>
         </div>
         <p className="whitespace-pre-line text-[15px] leading-relaxed">{e.modelAnswer}</p>
+        {e.modelAnswerKind !== 'framework' && <ListenButton text={e.modelAnswer} className="mt-3" />}
       </Card>
 
       {e.ai?.pronunciationNotes && (

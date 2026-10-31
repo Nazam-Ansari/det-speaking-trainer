@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Volume2 } from 'lucide-react';
+import { Square, Volume2 } from 'lucide-react';
 import type { Question } from '../types';
 import { imageUrl, TOPIC_LABELS, TYPE_LABELS } from '../data/questionBank';
 import { cn } from '../utils/format';
@@ -26,6 +26,30 @@ export function speak(text: string, onSpeakingChange?: (speaking: boolean) => vo
     u.onerror = () => onSpeakingChange(false);
   }
   window.speechSynthesis.speak(u);
+}
+
+/** Plays a text with the browser voice; press again to stop. */
+export function ListenButton({ text, label = 'Listen', className }: { text: string; label?: string; className?: string }) {
+  const [playing, setPlaying] = useState(false);
+  useEffect(() => () => {
+    if (canSpeak) window.speechSynthesis.cancel();
+  }, [text]);
+  if (!canSpeak) return null;
+  return (
+    <button
+      onClick={() => {
+        if (playing) {
+          window.speechSynthesis.cancel();
+          setPlaying(false);
+        } else {
+          speak(text, setPlaying);
+        }
+      }}
+      className={cn('inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm transition-colors', playing ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300' : 'border-slate-200 text-slate-600 hover:border-brand-400 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300', className)}
+    >
+      {playing ? <Square className="h-3.5 w-3.5" /> : <Volume2 className="h-4 w-4" />} {playing ? 'Stop' : label}
+    </button>
+  );
 }
 
 /** Interactive Speaking: a character that says the question out loud, with the text hidden (like the real test). */

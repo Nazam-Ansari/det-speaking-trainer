@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { ArrowRight, CircleCheck, Mic, RotateCcw, Square, Volume2, Wand2 } from 'lucide-react';
+import { ArrowRight, ChevronDown, CircleCheck, Lightbulb, Mic, RotateCcw, Square, Volume2, Wand2 } from 'lucide-react';
 import { useAttempts } from '../hooks/useData';
 import { useSettings } from '../hooks/useSettings';
 import { useRecorder } from '../hooks/useRecorder';
@@ -10,7 +10,7 @@ import { GRAMMAR_RULES } from '../engines/evaluation/grammarRules';
 import { splitSentences, words } from '../engines/evaluation/text';
 import { GRAMMAR_DRILLS, drillForRule, type GrammarDrill } from '../data/grammarDrills';
 import { CorrectionDiff } from '../components/FeedbackPanel';
-import { speak } from '../components/QuestionPrompt';
+import { ListenButton, speak } from '../components/QuestionPrompt';
 import { LevelMeter } from '../components/SpeakingTask';
 import { Alert, Badge, Button, Card, PageHeader, ProgressBar, Segmented } from '../components/ui';
 import { cn, formatSeconds } from '../utils/format';
@@ -66,6 +66,27 @@ export function DrillHubPage() {
   );
 }
 
+/** A model answer for when you don't know what to say: listen to it and read it. */
+function SampleAnswer({ text, open, onToggle, label = "Don't know what to say? Hear a sample answer" }: { text: string; open: boolean; onToggle: () => void; label?: string }) {
+  return (
+    <div className="rounded-xl border border-dashed border-slate-300 p-3 dark:border-slate-700">
+      <button onClick={onToggle} className="flex w-full items-center justify-between gap-2 text-left text-sm font-medium text-brand-700 dark:text-brand-300">
+        <span className="flex items-center gap-2"><Lightbulb className="h-4 w-4" /> {label}</span>
+        <ChevronDown className={cn('h-4 w-4 transition-transform', open && 'rotate-180')} />
+      </button>
+      {open && (
+        <div className="mt-3 space-y-2 animate-fade-in">
+          <p className="text-[15px] leading-relaxed">{text}</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <ListenButton text={text} label="Listen" />
+            <span className="text-xs text-slate-500">Listen, then answer in your own words — don't just read it.</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ---------- Session ----------
 
 interface Check { said: string; corrected: string; reasons: string[] }
@@ -106,7 +127,7 @@ type Step =
 type Outcome = 'clean' | 'fixed' | 'missed';
 
 /** Records one spoken answer and returns its transcript (or lets you type it). */
-function SpeakBox({ onText, prompt }: { onText: (text: string) => void; prompt: string }) {
+function SpeakBox({ onText, prompt, onRecording }: { onText: (text: string) => void; prompt: string; onRecording?: (recording: boolean) => void }) {
   const { settings } = useSettings();
   const manual = resolveEngine(settings) === 'manual';
   const session = useRef<TranscriptionSession | null>(null);
@@ -123,6 +144,7 @@ function SpeakBox({ onText, prompt }: { onText: (text: string) => void; prompt: 
   }, []);
   const recorder = useRecorder({ maxSeconds: ANSWER_SECONDS, onAutoStop: (r) => void finish(r.blob) });
   const recording = recorder.status === 'recording';
+  useEffect(() => onRecording?.(recording), [recording, onRecording]);
 
   const start = async () => {
     window.speechSynthesis?.cancel();
@@ -183,7 +205,10 @@ function DrillSession({ drill }: { drill: GrammarDrill }) {
   const [step, setStep] = useState<Step>({ kind: 'answer' });
   const [outcomes, setOutcomes] = useState<Outcome[]>([]);
   const [lang, setLang] = useState<'english' | 'roman-urdu'>('english');
-  const question = round[index];
+  const item = round[index];
+  const question = item?.q;
+  const [showSample, setShowSample] = useState(false);
+  const [recording, setRecording] = useState(false);
   const done = index >= round.length;
 
   const ask = useCallback((q: string) => speak(q), []);
@@ -195,7 +220,7 @@ function DrillSession({ drill }: { drill: GrammarDrill }) {
   }, [question, ask]);
 
   const record = (o: Outcome) => setOutcomes((list) => [...list, o]);
-  const next = () => { setIndex((i) => i + 1); setStep({ kind: 'answer' }); };
+  const next = () => { setIndex((i) => i + 1); setStep({ kind: 'answer' }); setShowSample(false); };
   const restart = () => { setRound(shuffle(drill.questions).slice(0, ROUND)); setIndex(0); setOutcomes([]); setStep({ kind: 'answer' }); };
 
   const onAnswer = (text: string) => {
@@ -246,19 +271,21 @@ function DrillSession({ drill }: { drill: GrammarDrill }) {
       <Card className="space-y-4">
         <div className="flex items-start gap-3">
           <p className="flex-1 text-xl font-semibold">{question}</p>
-          <button onClick={() => ask(question)} aria-label="Hear the question" className="text-slate-400 hover:text-brand-600"><Volume2 className="h-5 w-5" /></button>
+          <button onClick={() => ask(question!)} aria-label="Hear the question" className="text-slate-400 hover:text-brand-600"><Volume2 className="h-5 w-5" /></button>
         </div>
 
         {step.kind === 'answer' && (
           <>
             <p className="text-sm text-slate-500">Answer in 1–3 full sentences.</p>
-            <SpeakBox key={`a${index}`} onText={onAnswer} prompt="Answer" />
+            <SpeakBox key={`a${index}`} onText={onAnswer} prompt="Answer" onRecording={setRecording} />
+            {!recording && <SampleAnswer text={item.sample} open={showSample} onToggle={() => setShowSample((v) => !v)} />}
           </>
         )}
 
         {step.kind === 'result' && (step.check.reasons.length === 0 ? (
           <div className="space-y-3">
             <Alert tone="success" title="No mistakes found!">“{step.check.said}”</Alert>
+            <SampleAnswer text={item.sample} open={showSample} onToggle={() => setShowSample((v) => !v)} label="Compare with a sample answer" />
             <Button onClick={next}>Next question <ArrowRight className="h-4 w-4" /></Button>
           </div>
         ) : (

@@ -150,7 +150,7 @@ export function SpeakingTask({ question, mode, prepSeconds, autoStart, beeps, re
         {header}
         <QuestionPrompt question={question} showMeta={mode === 'practice'} readAloud={readAloud && !skipPrep} />
         {mode === 'practice' && question.type === 'speaking-sample' && (
-          <SpeakingGuide question={question.text} total={question.maxSeconds} elapsed={isRecording ? recorder.elapsed : null} />
+          <SpeakingGuide question={question.text} sampleAnswer={question.sampleAnswer} total={question.maxSeconds} elapsed={isRecording ? recorder.elapsed : null} />
         )}
       </Card>
 
