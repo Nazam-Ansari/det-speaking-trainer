@@ -3,3 +3,4 @@ dist
 *.local
 public/ort
 *.tsbuildinfo
+.claude/settings.local.json

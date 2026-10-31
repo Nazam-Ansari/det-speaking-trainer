@@ -17,10 +17,14 @@ export default {
       keyframes: {
         'fade-in': { from: { opacity: '0', transform: 'translateY(4px)' }, to: { opacity: '1', transform: 'none' } },
         pulse_ring: { '0%': { transform: 'scale(1)', opacity: '0.6' }, '100%': { transform: 'scale(1.8)', opacity: '0' } },
+        talk: { '0%, 100%': { transform: 'scale(1) rotate(0deg)' }, '25%': { transform: 'scale(1.06) rotate(-3deg)' }, '75%': { transform: 'scale(1.03) rotate(3deg)' } },
+        sound_bar: { '0%, 100%': { height: '0.375rem' }, '50%': { height: '1.5rem' } },
       },
       animation: {
         'fade-in': 'fade-in 220ms ease-out',
         'pulse-ring': 'pulse_ring 1.4s ease-out infinite',
+        talk: 'talk 0.5s ease-in-out infinite',
+        'sound-bar': 'sound_bar 0.6s ease-in-out infinite',
       },
     },
   },

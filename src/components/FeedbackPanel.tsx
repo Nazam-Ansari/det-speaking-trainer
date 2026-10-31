@@ -85,6 +85,15 @@ export function FeedbackPanel({ evaluation: e, originalTranscript, editedTranscr
         </Card>
       </div>
 
+      <Card>
+        <div className="mb-2 flex items-center gap-2">
+          <BookMarked className="h-4 w-4 text-slate-400" />
+          <p className="text-sm font-medium">{e.modelAnswerKind === 'framework' ? 'Answer framework' : e.modelAnswerKind === 'ai' ? 'Better answer' : 'Model answer'}</p>
+          <Badge tone={e.modelAnswerKind === 'framework' ? 'neutral' : 'brand'}>{e.modelAnswerKind === 'framework' ? 'Structure guide' : e.modelAnswerKind === 'ai' ? 'Written by AI from your ideas' : 'Written sample'}</Badge>
+        </div>
+        <p className="whitespace-pre-line text-[15px] leading-relaxed">{e.modelAnswer}</p>
+      </Card>
+
       {e.ai?.pronunciationNotes && (
         <Card>
           <CardHeader icon={<Ear className="h-4 w-4" />} title="AI listening feedback" subtitle="The AI's opinion after hearing your recording. An estimate, not a measured pronunciation score." />
@@ -151,15 +160,6 @@ export function FeedbackPanel({ evaluation: e, originalTranscript, editedTranscr
               </ul>
             </Card>
           )}
-
-          <Card>
-            <div className="mb-2 flex items-center gap-2">
-              <BookMarked className="h-4 w-4 text-slate-400" />
-              <p className="text-sm font-medium">{e.modelAnswerKind === 'framework' ? 'Answer framework' : e.modelAnswerKind === 'ai' ? 'Better answer' : 'Model answer'}</p>
-              <Badge tone={e.modelAnswerKind === 'framework' ? 'neutral' : 'brand'}>{e.modelAnswerKind === 'framework' ? 'Structure guide' : e.modelAnswerKind === 'ai' ? 'Written by AI from your ideas' : 'Written sample'}</Badge>
-            </div>
-            <p className="whitespace-pre-line text-[15px] leading-relaxed">{e.modelAnswer}</p>
-          </Card>
 
           <div className="grid gap-4 md:grid-cols-2">
             <Card>

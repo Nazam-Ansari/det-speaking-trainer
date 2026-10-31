@@ -25,6 +25,8 @@ export interface Question {
   keywords: string[];
   /** Image file name in /public/images (photo questions only). */
   image?: string;
+  /** Attribution for a photo used under a Creative Commons licence. */
+  imageCredit?: { author: string; license: string; source: string };
   /** Optional bullet points shown under the prompt (like the DET "Read, Then Speak" cues). */
   cues?: string[];
   /** Optional model answer written for this question. */

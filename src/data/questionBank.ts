@@ -85,9 +85,38 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+// When each question/scenario was last shown, so picks rotate through the whole bank
+// instead of repeating ones that were shown but never answered.
+const SEEN_KEY = 'det-seen-questions';
+
+function loadSeen(): Record<string, number> {
+  try {
+    return JSON.parse(localStorage.getItem(SEEN_KEY) ?? '{}') as Record<string, number>;
+  } catch {
+    return {};
+  }
+}
+
+function markSeen(ids: string[]): void {
+  try {
+    const seen = loadSeen();
+    const now = Date.now();
+    for (const id of ids) seen[id] = now;
+    localStorage.setItem(SEEN_KEY, JSON.stringify(seen));
+  } catch {
+    // Storage unavailable (private mode, tests): rotation just falls back to random.
+  }
+}
+
+/** Shuffles, then puts never-shown / least recently shown items first (ties stay random). */
+function leastRecentFirst<T extends { id: string }>(items: T[], seen: Record<string, number>): T[] {
+  return shuffle(items).sort((a, b) => (seen[a.id] ?? 0) - (seen[b.id] ?? 0));
+}
+
 /**
  * Picks `count` questions, preferring the chosen difficulty and avoiding excluded
- * (recently answered) ids. Falls back gracefully when the pool is too small.
+ * (recently answered) ids, then the ones shown least recently. Falls back gracefully
+ * when the pool is too small. Picked questions are recorded as shown.
  */
 export function pickQuestions(count: number, opts: PickOptions = {}): Question[] {
   const types = opts.type ? (Array.isArray(opts.type) ? opts.type : [opts.type]) : undefined;
@@ -101,13 +130,15 @@ export function pickQuestions(count: number, opts: PickOptions = {}): Question[]
     pool.filter((q) => byDiff(q) && exclude.has(q.id)),
     pool.filter((q) => !byDiff(q) && exclude.has(q.id)),
   ];
+  const seen = loadSeen();
   const result: Question[] = [];
   for (const tier of tiers) {
-    for (const q of shuffle(tier)) {
-      if (result.length >= count) return result;
+    for (const q of leastRecentFirst(tier, seen)) {
+      if (result.length >= count) break;
       result.push(q);
     }
   }
+  markSeen(result.map((q) => q.id));
   return result;
 }
 
@@ -120,7 +151,9 @@ export function pickScenario(opts: { difficulty?: Difficulty | 'any'; exclude?: 
     SCENARIOS,
   ];
   const tier = tiers.find((t) => t.length > 0)!;
-  return tier[Math.floor(Math.random() * tier.length)];
+  const [scenario] = leastRecentFirst(tier, loadSeen());
+  markSeen([scenario.id]);
+  return scenario;
 }
 
 /** Converts a scenario node into a Question so it can be evaluated and stored like any other. */
