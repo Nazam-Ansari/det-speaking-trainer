@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowRight, FileText, Image, MessagesSquare, Mic, Shuffle } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowRight, Compass, FileText, Image, MessagesSquare, Mic, Shuffle, SpellCheck } from 'lucide-react';
 import type { Difficulty, QuestionType } from '../types';
 import { QUESTIONS, SCENARIOS, TOTAL_PROMPTS } from '../data/questionBank';
 import { useSettings } from '../hooks/useSettings';
@@ -77,6 +77,25 @@ export function PracticeHubPage() {
               </div>
             </Card>
           </button>
+        ))}
+      </div>
+
+      <h2 className="mb-3 mt-8 text-lg font-semibold">Learn & fix your mistakes</h2>
+      <div className="grid gap-4 sm:grid-cols-2">
+        {[
+          { to: '/drill', icon: SpellCheck, title: 'Grammar Drill', description: 'Short spoken questions that target the grammar you get wrong. Answer, see the correction, then say it again correctly.', badge: 'Speaking' },
+          { to: '/learn', icon: Compass, title: 'How to speak for 3 minutes', description: 'Split a Speaking Sample into parts and learn how many seconds to spend on each, for every question type.', badge: 'Guide' },
+        ].map(({ to, icon: Icon, title, description, badge }) => (
+          <Link key={to} to={to} className="group focus-visible:outline-none">
+            <Card className="h-full transition-all group-hover:-translate-y-0.5 group-hover:border-brand-300 group-hover:shadow-md dark:group-hover:border-brand-800">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="rounded-xl bg-violet-50 p-2.5 text-violet-600 dark:bg-violet-950 dark:text-violet-400"><Icon className="h-5 w-5" /></div>
+                <Badge tone="violet">{badge}</Badge>
+              </div>
+              <h3 className="font-semibold">{title}</h3>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{description}</p>
+            </Card>
+          </Link>
         ))}
       </div>
 

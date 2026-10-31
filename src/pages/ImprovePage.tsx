@@ -15,12 +15,12 @@ const GRAMMAR_CATEGORIES = ['grammar', 'verb-tense', 'article', 'agreement', 'wo
 const MASTERED_KEY = 'det-mastered-corrections';
 
 /** What to do when a dimension is holding the score back, and where to practise it. */
-const ADVICE: Record<EvaluationCriterion, { tip: string; type?: QuestionType }> = {
-  grammar: { tip: 'Do the "Fix it yourself" drill below every day, then re-record answers using the corrected sentences.' },
+const ADVICE: Record<EvaluationCriterion, { tip: string; type?: QuestionType; to?: string }> = {
+  grammar: { tip: 'Do a speaking Grammar Drill on your most common mistake, plus the "Fix it yourself" drill below, every day.', to: '/drill' },
   vocabulary: { tip: 'During prep time, pick 3 precise topic words (e.g. "crowded", "affordable", "essential") and use all of them.', type: 'speaking-sample' },
   fluency: { tip: 'Speak for the full time. Replace "um/uh" with a short silent pause, and keep going instead of restarting sentences.', type: 'speaking-sample' },
   relevance: { tip: 'Start each answer by repeating the key words of the question, then answer it directly.', type: 'read-then-speak' },
-  development: { tip: 'Use Point → Reason → Example → Conclusion. Every opinion needs a "because…" and a "for example…".', type: 'speaking-sample' },
+  development: { tip: 'Use Point → Reason → Example → Conclusion. Every opinion needs a "because…" and a "for example…". The 3-minute guide shows how to split an answer into parts.', to: '/learn' },
   structure: { tip: 'Join short sentences with "although", "which", "while", "however" — aim for two linked sentences per answer.', type: 'read-then-speak' },
 };
 
@@ -226,8 +226,8 @@ export function ImprovePage() {
 
   const gap = target - s.current;
   const plan = [
-    ...(s.shortShare >= 0.3 ? [{ title: 'Speak for longer first', detail: `${Math.round(s.shortShare * 100)}% of your recent answers were too short. Short answers are capped at a low score no matter how good the grammar is, so fix this first.`, type: 'speaking-sample' as QuestionType, gain: null as number | null }] : []),
-    ...s.dims.filter((d) => d.gain > 0).slice(0, 3).map((d) => ({ title: `Improve ${CRITERION_LABELS[d.key].toLowerCase()}`, detail: ADVICE[d.key].tip, type: ADVICE[d.key].type, gain: d.gain })),
+    ...(s.shortShare >= 0.3 ? [{ title: 'Speak for longer first', detail: `${Math.round(s.shortShare * 100)}% of your recent answers were too short. Short answers are capped at a low score no matter how good the grammar is, so fix this first.`, type: 'speaking-sample' as QuestionType, to: '/learn' as string | undefined, gain: null as number | null }] : []),
+    ...s.dims.filter((d) => d.gain > 0).slice(0, 3).map((d) => ({ title: `Improve ${CRITERION_LABELS[d.key].toLowerCase()}`, detail: ADVICE[d.key].tip, type: ADVICE[d.key].type, to: ADVICE[d.key].to, gain: d.gain })),
   ];
 
   return (
@@ -275,7 +275,7 @@ export function ImprovePage() {
                 <div className="min-w-0 flex-1">
                   <p className="font-medium">{p.title} {p.gain ? <span className="text-sm font-normal text-amber-600">(up to +{p.gain})</span> : null}</p>
                   <p className="text-sm text-slate-600 dark:text-slate-400">{p.detail}</p>
-                  {p.type && <Link to={`/practice/${p.type}`} className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-brand-600 hover:underline">Practise now <ArrowRight className="h-3.5 w-3.5" /></Link>}
+                  {(p.to ?? p.type) && <Link to={p.to ?? `/practice/${p.type}`} className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-brand-600 hover:underline">Practise now <ArrowRight className="h-3.5 w-3.5" /></Link>}
                 </div>
               </li>
             ))}
@@ -289,6 +289,7 @@ export function ImprovePage() {
           icon={<Lightbulb className="h-4 w-4" />}
           title="Mistakes you keep making"
           subtitle={`${s.errorsPer100} grammar mistakes per 100 words in your recent answers. Under 2 is a good level for ${target}+.`}
+          action={<Link to="/drill"><Button variant="outline" size="sm">Practise by speaking <ArrowRight className="h-3.5 w-3.5" /></Button></Link>}
         />
         {!s.usesAi && (
           <Alert tone="info" className="mb-4">

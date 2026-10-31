@@ -6,6 +6,7 @@ import { useCountdown } from '../hooks/useCountdown';
 import { TranscriptionSession } from '../services/transcription';
 import { beep } from '../services/audio';
 import { QuestionPrompt } from './QuestionPrompt';
+import { SpeakingGuide } from './SpeakingGuide';
 import { Alert, Button, Card } from './ui';
 import { cn, formatSeconds } from '../utils/format';
 
@@ -148,6 +149,9 @@ export function SpeakingTask({ question, mode, prepSeconds, autoStart, beeps, re
       <Card className="min-w-0">
         {header}
         <QuestionPrompt question={question} showMeta={mode === 'practice'} readAloud={readAloud && !skipPrep} />
+        {mode === 'practice' && question.type === 'speaking-sample' && (
+          <SpeakingGuide question={question.text} total={question.maxSeconds} elapsed={isRecording ? recorder.elapsed : null} />
+        )}
       </Card>
 
       <Card className="flex flex-col items-center gap-4 text-center lg:sticky lg:top-6 lg:self-start">

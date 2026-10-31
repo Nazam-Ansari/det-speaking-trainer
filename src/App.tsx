@@ -8,6 +8,8 @@ import { FullTestPage } from './pages/FullTestPage';
 import { TestResultsPage } from './pages/TestResultsPage';
 import { HistoryPage } from './pages/HistoryPage';
 import { ImprovePage } from './pages/ImprovePage';
+import { DrillHubPage, DrillSessionPage } from './pages/DrillPages';
+import { LearnPage } from './pages/LearnPage';
 import { AttemptDetailPage } from './pages/AttemptDetailPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { AboutPage } from './pages/AboutPage';
@@ -24,6 +26,9 @@ export function App() {
             <Route path="test" element={<FullTestPage />} />
             <Route path="test/results/:id" element={<TestResultsPage />} />
             <Route path="improve" element={<ImprovePage />} />
+            <Route path="drill" element={<DrillHubPage />} />
+            <Route path="drill/:id" element={<DrillSessionPage />} />
+            <Route path="learn" element={<LearnPage />} />
             <Route path="history" element={<HistoryPage />} />
             <Route path="history/:id" element={<AttemptDetailPage />} />
             <Route path="settings" element={<SettingsPage />} />
