@@ -23,7 +23,7 @@ const TARGET_WORDS: Record<QuestionType, { min: number; good: number }> = {
   'speaking-sample': { min: 110, good: 200 },
 };
 
-const WEIGHTS = { grammar: 0.22, vocabulary: 0.2, fluency: 0.18, relevance: 0.15, development: 0.15, structure: 0.1 };
+export const WEIGHTS = { grammar: 0.22, vocabulary: 0.2, fluency: 0.18, relevance: 0.15, development: 0.15, structure: 0.1 };
 
 // ---------------------------------------------------------------------------
 // Grammar

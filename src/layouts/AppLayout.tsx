@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { BookOpen, ClipboardCheck, History, Info, LayoutDashboard, Mic, Moon, Settings, Sun, Monitor } from 'lucide-react';
+import { BookOpen, ClipboardCheck, GraduationCap, History, Info, LayoutDashboard, Mic, Moon, Settings, Sun, Monitor } from 'lucide-react';
 import { useEffect } from 'react';
 import { cn } from '../utils/format';
 import { useSettings } from '../hooks/useSettings';
@@ -9,6 +9,7 @@ const NAV = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/practice', label: 'Practice', icon: BookOpen },
   { to: '/test', label: 'Full Test', icon: ClipboardCheck },
+  { to: '/improve', label: 'Improve', icon: GraduationCap },
   { to: '/history', label: 'History', icon: History },
   { to: '/settings', label: 'Settings', icon: Settings },
 ];
@@ -101,7 +102,7 @@ export function AppLayout() {
       </main>
 
       {/* Mobile bottom nav */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur dark:border-slate-800 dark:bg-slate-900/95 lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur dark:border-slate-800 dark:bg-slate-900/95 lg:hidden">
         {NAV.map(({ to, label, icon: Icon, end }) => (
           <NavLink
             key={to}

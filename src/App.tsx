@@ -7,6 +7,7 @@ import { PracticeSessionPage } from './pages/PracticeSessionPage';
 import { FullTestPage } from './pages/FullTestPage';
 import { TestResultsPage } from './pages/TestResultsPage';
 import { HistoryPage } from './pages/HistoryPage';
+import { ImprovePage } from './pages/ImprovePage';
 import { AttemptDetailPage } from './pages/AttemptDetailPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { AboutPage } from './pages/AboutPage';
@@ -22,6 +23,7 @@ export function App() {
             <Route path="practice/:type" element={<PracticeSessionPage />} />
             <Route path="test" element={<FullTestPage />} />
             <Route path="test/results/:id" element={<TestResultsPage />} />
+            <Route path="improve" element={<ImprovePage />} />
             <Route path="history" element={<HistoryPage />} />
             <Route path="history/:id" element={<AttemptDetailPage />} />
             <Route path="settings" element={<SettingsPage />} />
